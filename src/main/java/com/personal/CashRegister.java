@@ -8,8 +8,9 @@ public class CashRegister {
     private static String cmd = "usage";
     private static final int[] initCount = { 1, 2, 3, 4, 5 };
     private static final int[] denominations = { 20, 10, 5, 2, 1 };
-    private int[] counter;
+    private int[] counts;
     private int[] values;
+    private int[] cloneCount;
 
     /**
      * Check command
@@ -23,9 +24,11 @@ public class CashRegister {
      * Initialize variables
      */
     private void init() {
-        counter = new int[5];
+        counts = new int[5];
         values = new int[5];
-        counter = initCount.clone();
+        cloneCount = new int[5];
+        counts = initCount.clone();
+        System.out.println("ready");
     }
 
     /**
@@ -33,8 +36,57 @@ public class CashRegister {
      */
     private void show() {
         calculateValues();
-        int sum = calculateSum(values);
-        showFormatted(sum);
+        showFormatted(calculateSum(values));
+    }
+
+    /**
+     * Put bills in each denomination and show current state
+     * @param args
+     */
+    private void put(String[] args) {
+        try {
+            cloneCount = counts.clone();
+            for (int i = 0; i < counts.length; i++) {
+                int cashToPut = Integer.parseInt(args[i+1]);
+                if (cashToPut >= 0) {
+                    counts[i] += cashToPut;
+                } else {
+                    counts = cloneCount.clone();
+                    System.out.println("Cannot accept negative integers - for input string: \"" + cashToPut + "\"");
+                    break;
+                }
+            }
+            calculateValues();
+            showFormatted(calculateSum(values));
+        } catch (NumberFormatException exception) {
+            counts = cloneCount.clone();
+            System.out.println("Accepts integers only - " + exception.getMessage().toLowerCase());
+        }
+    }
+
+    /**
+     * Take bills in each denomination and show current state
+     * @param args
+     */
+    private void take(String[] args) {
+        try {
+            cloneCount = counts.clone();
+            for (int i = 0; i < counts.length; i++) {
+                int cashToTake = Integer.parseInt(args[i+1]);
+                if (cashToTake >= 0 && cashToTake <= counts[i]) {
+                    counts[i] -= Integer.parseInt(args[i+1]);
+                } else {
+                    counts = cloneCount.clone();
+                    System.out.println("Cannot accept negative/greater than count integers - for input string: \"" + cashToTake + "\"");
+                    break;
+                }
+            }
+            calculateValues();
+            showFormatted(calculateSum(values));
+        } catch (NumberFormatException exception) {
+            counts = cloneCount.clone();
+            System.out.println("Accepts integers only - " + exception.getMessage().toLowerCase());
+        }
     }
 
     /**
@@ -64,8 +116,8 @@ public class CashRegister {
      */
     private void showFormatted(int sum) {
         String toPrint = "";
-        for (int i = 0; i < counter.length; i++) {
-            toPrint += " " + counter[i];
+        for (int i = 0; i < counts.length; i++) {
+            toPrint += " " + counts[i];
         }
         System.out.println("$" + sum + toPrint);
     }
@@ -87,13 +139,14 @@ public class CashRegister {
      * Calculate the values of each denominations and store in array
      */
     private void calculateValues() {
-        for (int i = 0; i < counter.length; i++) {
-            values[i] = denominations[i] * counter[i];
+        for (int i = 0; i < counts.length; i++) {
+            values[i] = denominations[i] * counts[i];
         }
     }
 
     /**
-     * Main entry
+     * Main entry for cash register app
+     * @param args
      */
     public static void main(String[] args) {
         CashRegister register = new CashRegister();
@@ -107,7 +160,11 @@ public class CashRegister {
                     register.init();
                 } else if (cmd.equals("show")) {
                     register.show();
-                } else if (cmd.equals("quit")) {
+                } else if (cmd.equals("put")) {
+                    register.put(words);
+                } else if (cmd.equals("take")) {
+                    register.take(words);
+                }  else if (cmd.equals("quit")) {
                     register.quit();
                 } else {
                     register.usage();
