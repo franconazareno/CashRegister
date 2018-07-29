@@ -10,7 +10,7 @@ public class CashRegister {
     private static final int[] denominations = { 20, 10, 5, 2, 1 };
     private int[] counts;
     private int[] values;
-    private int[] cloneCount;
+    private int[] countsClone;
 
     /**
      * Check command
@@ -26,13 +26,16 @@ public class CashRegister {
     private void init() {
         counts = new int[5];
         values = new int[5];
-        cloneCount = new int[5];
+        countsClone = new int[5];
         counts = initCount.clone();
         System.out.println("ready");
     }
 
     /**
      * Show current state, including total and count of each denomination
+     * $Total #$20 #$10 #$5 #$2 #$1
+     * for example, $68 1 2 3 4 5 means:
+     * Total=$68 $20x1 $10x2 $5x3 $2x4 $1x5
      */
     private void show() {
         calculateValues();
@@ -40,18 +43,19 @@ public class CashRegister {
     }
 
     /**
-     * Put bills in each denomination and show current state
+     * Put bills in each denomination: #$20 #$10 #$5 #$2 #$1
+     * and show current state
      * @param args
      */
     private void put(String[] args) {
         try {
-            cloneCount = counts.clone();
+            countsClone = counts.clone();
             for (int i = 0; i < counts.length; i++) {
                 int cashToPut = Integer.parseInt(args[i+1]);
                 if (cashToPut >= 0) {
                     counts[i] += cashToPut;
                 } else {
-                    counts = cloneCount.clone();
+                    counts = countsClone.clone();
                     System.out.println("Cannot accept negative integers - for input string: \"" + cashToPut + "\"");
                     break;
                 }
@@ -59,24 +63,25 @@ public class CashRegister {
             calculateValues();
             showFormatted(calculateSum(values));
         } catch (NumberFormatException exception) {
-            counts = cloneCount.clone();
+            counts = countsClone.clone();
             System.out.println("Accepts integers only - " + exception.getMessage().toLowerCase());
         }
     }
 
     /**
-     * Take bills in each denomination and show current state
+     * Take bills in each denomination: #$20 #$10 #$5 #$2 #$1
+     * and show current state
      * @param args
      */
     private void take(String[] args) {
         try {
-            cloneCount = counts.clone();
+            countsClone = counts.clone();
             for (int i = 0; i < counts.length; i++) {
                 int cashToTake = Integer.parseInt(args[i+1]);
                 if (cashToTake >= 0 && cashToTake <= counts[i]) {
                     counts[i] -= Integer.parseInt(args[i+1]);
                 } else {
-                    counts = cloneCount.clone();
+                    counts = countsClone.clone();
                     System.out.println("Cannot accept negative/greater than count integers - for input string: \"" + cashToTake + "\"");
                     break;
                 }
@@ -84,14 +89,52 @@ public class CashRegister {
             calculateValues();
             showFormatted(calculateSum(values));
         } catch (NumberFormatException exception) {
-            counts = cloneCount.clone();
+            counts = countsClone.clone();
             System.out.println("Accepts integers only - " + exception.getMessage().toLowerCase());
         }
     }
 
+    /**
+     * Remove money from cash register
+     * and show requested change in each denomination: #$20 #$10 #$5 #$2 #$1
+     * and show error if there are insufficient funds or no change can be made
+     * @param args
+     */
     private void change(String[] args) {
-        //TODO
-        System.out.println("change");
+        try {
+            countsClone = counts.clone();
+            int[] tmpCount = counts.clone();
+            int cashToChange = Integer.parseInt(args[1]);
+
+            if (cashToChange > 0) {
+                for (int i = 0; i < 100; i++) {
+                    for (int j = 0; j < counts.length; j++) {
+                        cashToChange = calculateChange(j, cashToChange);
+                        if (cashToChange <= 0) {
+                            break;
+                        }
+                    }
+
+                    if (cashToChange == 0) {
+                        showChangeUsage(tmpCount);
+                        break;
+                    } else if (cashToChange > 0 & i == 99) {
+                        counts = tmpCount.clone();
+                        System.out.println("sorry");
+                        break;
+                    }
+                }
+            } else if (cashToChange == 0) {
+                counts = countsClone.clone();
+                System.out.println("Nothing to change");
+            } else {
+                counts = countsClone.clone();
+                System.out.println("Cannot accept negative integers - for input string: \"" + cashToChange + "\"");
+            }
+        } catch (NumberFormatException exception) {
+            counts = countsClone.clone();
+            System.out.println("Accepts integers only - " + exception.getMessage().toLowerCase());
+        }
     }
 
     /**
@@ -112,7 +155,7 @@ public class CashRegister {
                 "\nshow - show current state, including total and each denomination" +
                 "\nput args - 5 arguments separated by space, put bills in each denomination and show current state" +
                 "\ntake args - 5 arguments separated by space, take bills in each denomination and show current state" +
-                "\nchange args - 1 argument, show requested change in each denomination, remove from cash register and show current state" +
+                "\nchange args - 1 argument, remove from cash register and show requested change in each denomination" +
                 "\nquit - exit program" +
                 "\nhelp - show usage"
         );
@@ -153,6 +196,36 @@ public class CashRegister {
     }
 
     /**
+     * Calculate and remove money from cash register
+     * @param index
+     * @param cashToChange
+     * @return
+     */
+    private int calculateChange(int index, int cashToChange) {
+        if (counts[index] > 0) {
+            if (values[index] <= cashToChange || cashToChange % denominations[index] == 0) {
+                counts[index] -= 1;
+                cashToChange -= denominations[index];
+                calculateValues();
+            }
+        }
+        return cashToChange;
+    }
+
+    /**
+     * Print the count of denominations used
+     * @param orig
+     */
+    private void showChangeUsage(int[] orig) {
+        String toPrint = "";
+        for (int i = 0; i < counts.length; i++) {
+            orig[i] -= counts[i];
+            toPrint += orig[i] + " ";
+        }
+        System.out.println(toPrint);
+    }
+
+    /**
      * Main entry for cash register app
      * @param args
      */
@@ -180,8 +253,9 @@ public class CashRegister {
                     register.usage();
                 }
             } catch (Exception exception) {
+                exception.printStackTrace();
                 System.out.println("System error: " + exception.getMessage());
-                System.out.println("Exiting..");
+                System.out.println("Exiting...");
                 register.quit(1);
             }
         }
