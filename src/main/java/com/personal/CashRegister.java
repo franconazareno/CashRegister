@@ -5,9 +5,9 @@ import java.io.InputStreamReader;
 
 public class CashRegister {
 
-    private static String cmd = "usage";
     private static final int[] initCount = { 1, 2, 3, 4, 5 };
     private static final int[] denominations = { 20, 10, 5, 2, 1 };
+    private static String cmd = "usage";
     private int[] counts;
     private int[] values;
     private int[] countsClone;
@@ -18,6 +18,42 @@ public class CashRegister {
      */
     private boolean evaluateCmd() {
         return !cmd.equals("quit");
+    }
+
+    /**
+     * Check if number of arguments needed is correct
+     * @param args
+     * @param count
+     * @return
+     */
+    private boolean checkArgsCount(String[] args, int count) {
+        if (args.length == count) {
+            return true;
+        }
+        System.out.println("Incorrect number of arguments");
+        return false;
+    }
+
+    /**
+     * Execute the command with the given parameters
+     * @param args
+     */
+    private void executeCmd(String[] args) {
+        if (cmd.equals("init")) {
+            this.init();
+        } else if (cmd.equals("show")) {
+            this.show();
+        } else if (cmd.equals("put")) {
+            if (checkArgsCount(args, 6)) this.put(args);
+        } else if (cmd.equals("take")) {
+            if (checkArgsCount(args, 6)) this.take(args);
+        } else if (cmd.equals("change")) {
+            if (checkArgsCount(args, 2)) this.change(args);
+        } else if (cmd.equals("quit")) {
+            this.quit(0);
+        } else {
+            this.usage();
+        }
     }
 
     /**
@@ -232,32 +268,22 @@ public class CashRegister {
     public static void main(String[] args) {
         CashRegister register = new CashRegister();
         register.init();
-        while (register.evaluateCmd()) {
-            try {
+
+        try {
+            while (register.evaluateCmd()) {
                 BufferedReader bufferedReader = new BufferedReader (new InputStreamReader(System.in));
                 String[] words = bufferedReader.readLine().split(" ");
-                cmd = words[0];
-                if (cmd.equals("init")) {
-                    register.init();
-                } else if (cmd.equals("show")) {
-                    register.show();
-                } else if (cmd.equals("put")) {
-                    register.put(words);
-                } else if (cmd.equals("take")) {
-                    register.take(words);
-                } else if (cmd.equals("change")) {
-                    register.change(words);
-                } else if (cmd.equals("quit")) {
-                    register.quit(0);
+                if (words.length > 0) {
+                    cmd = words[0];
+                    register.executeCmd(words);
                 } else {
                     register.usage();
                 }
-            } catch (Exception exception) {
-                exception.printStackTrace();
-                System.out.println("System error: " + exception.getMessage());
-                System.out.println("Exiting...");
-                register.quit(1);
             }
+        } catch (Exception exception) {
+            System.out.println("System error: " + exception.getMessage());
+            System.out.println("Exiting...");
+            register.quit(1);
         }
     }
 }
