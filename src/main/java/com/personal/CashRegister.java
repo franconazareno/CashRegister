@@ -89,14 +89,22 @@ public class CashRegister {
         }
     }
 
+    private void change(String[] args) {
+        //TODO
+        System.out.println("change");
+    }
+
     /**
      * Exit the program
      */
-    private void quit() {
+    private void quit(int status) {
         System.out.println("Bye");
-        System.exit(0);
+        System.exit(status);
     }
 
+    /**
+     * Print usage help
+     */
     private void usage() {
         System.out.println("Usage: cmd args" +
                 "\nCommands and arguments:" +
@@ -164,13 +172,17 @@ public class CashRegister {
                     register.put(words);
                 } else if (cmd.equals("take")) {
                     register.take(words);
-                }  else if (cmd.equals("quit")) {
-                    register.quit();
+                } else if (cmd.equals("change")) {
+                    register.change(words);
+                } else if (cmd.equals("quit")) {
+                    register.quit(0);
                 } else {
                     register.usage();
                 }
             } catch (Exception exception) {
-                // Handle exceptions here.
+                System.out.println("System error: " + exception.getMessage());
+                System.out.println("Exiting..");
+                register.quit(1);
             }
         }
     }
