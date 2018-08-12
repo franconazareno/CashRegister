@@ -7,16 +7,17 @@ public class CashRegister {
 
     private static final int[] initCount = { 1, 2, 3, 4, 5 };
     private static final int[] denominations = { 20, 10, 5, 2, 1 };
-    private static String cmd = "usage";
     private int[] counts;
     private int[] values;
     private int[] countsClone;
+
+    public static String cmd = "usage";
 
     /**
      * Check command
      * @return boolean
      */
-    private boolean evaluateCmd() {
+    public boolean evaluateCmd() {
         return !cmd.equals("quit");
     }
 
@@ -38,7 +39,7 @@ public class CashRegister {
      * Execute the command with the given parameters
      * @param args
      */
-    private void executeCmd(String[] args) {
+    public void executeCmd(String[] args) {
         if (cmd.equals("init")) {
             this.init();
         } else if (cmd.equals("show")) {
@@ -59,7 +60,7 @@ public class CashRegister {
     /**
      * Initialize variables
      */
-    private void init() {
+    public void init() {
         counts = new int[5];
         values = new int[5];
         countsClone = new int[5];
@@ -176,7 +177,7 @@ public class CashRegister {
     /**
      * Exit the program
      */
-    private void quit(int status) {
+    public void quit(int status) {
         System.out.println("Bye");
         System.exit(status);
     }
@@ -184,7 +185,7 @@ public class CashRegister {
     /**
      * Print usage help
      */
-    private void usage() {
+    public void usage() {
         System.out.println("Usage: cmd args" +
                 "\nCommands and arguments:" +
                 "\ninit - initialize denomination count and values" +
@@ -261,29 +262,4 @@ public class CashRegister {
         System.out.println(toPrint);
     }
 
-    /**
-     * Main entry for cash register app
-     * @param args
-     */
-    public static void main(String[] args) {
-        CashRegister register = new CashRegister();
-        register.init();
-
-        try {
-            while (register.evaluateCmd()) {
-                BufferedReader bufferedReader = new BufferedReader (new InputStreamReader(System.in));
-                String[] words = bufferedReader.readLine().split(" ");
-                if (words.length > 0) {
-                    cmd = words[0];
-                    register.executeCmd(words);
-                } else {
-                    register.usage();
-                }
-            }
-        } catch (Exception exception) {
-            System.out.println("System error: " + exception.getMessage());
-            System.out.println("Exiting...");
-            register.quit(1);
-        }
-    }
 }

@@ -9,3 +9,6 @@ Supports putting money into the register and taking it out. Supports change of a
 - Added function to check if arguments are valid (allows integer only, cannot take more than the existing amount)
 - Roll back values if arguments are invalid
 - Added help usage command
+
+## To Do:
+- Type II change method
